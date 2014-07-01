@@ -24,12 +24,15 @@ class SimpleAtomicLong
      * The ReentrantReadWriteLock used to serialize access to mValue.
      */
     // TODO - add the implementation
+    private ReentrantReadWriteLock reRWLock;
 
     /**
      * Creates a new SimpleAtomicLong with the given initial value.
      */
     public SimpleAtomicLong(long initialValue) {
         // TODO - you fill in here
+    	mValue = initialValue;
+    	reRWLock = new ReentrantReadWriteLock();
     }
 
     /**
@@ -39,6 +42,14 @@ class SimpleAtomicLong
      */
     public long get() {
         // TODO - you fill in here
+    	reRWLock.readLock().lock();
+    	try
+    	{
+    		return mValue;
+    	}
+    	finally{
+    		reRWLock.readLock().unlock();
+    	}
     }
 
     /**
@@ -48,6 +59,16 @@ class SimpleAtomicLong
      */
     public long decrementAndGet() {
         // TODO - you fill in here
+    	reRWLock.writeLock().lock();
+    	try
+    	{
+    		mValue--;
+    		
+    		return mValue;
+    	}
+    	finally{
+    		reRWLock.writeLock().unlock();
+    	}    	
     }
 
     /**
@@ -57,6 +78,19 @@ class SimpleAtomicLong
      */
     public long getAndIncrement() {
         // TODO - you fill in here
+    	
+    	long previousValue = get();
+    	
+    	reRWLock.writeLock().lock();
+    	try
+    	{
+    		mValue++;
+    	}
+    	finally{
+    		reRWLock.writeLock().unlock();
+    	}
+    	
+    	return previousValue;
     }
 
     /**
@@ -66,6 +100,19 @@ class SimpleAtomicLong
      */
     public long getAndDecrement() {
         // TODO - you fill in here
+
+    	long previousValue = get();
+    	
+    	reRWLock.writeLock().lock();
+    	try
+    	{
+    		mValue--;
+    	}
+    	finally{
+    		reRWLock.writeLock().unlock();
+    	}
+    	
+    	return previousValue;
     }
 
     /**
@@ -75,6 +122,15 @@ class SimpleAtomicLong
      */
     public long incrementAndGet() {
         // TODO - you fill in here
+    	reRWLock.writeLock().lock();
+    	try
+    	{
+    		mValue++;
+    		return mValue;
+    	}
+    	finally{
+    		reRWLock.writeLock().unlock();
+    	}
     }
 }
 
