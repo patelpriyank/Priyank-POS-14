@@ -23,7 +23,8 @@ public class SimpleSemaphore {
 	 * Define a Condition that waits while the number of permits is 0.
 	 */
 	// TODO - you fill in here
-	Condition permitsAvailable, noPermitsAvailable;
+	//Condition permitsAvailable, noPermitsAvailable;
+	Condition waitCond;
 
 	/**
 	 * Define a count of the number of available permits.
@@ -38,14 +39,17 @@ public class SimpleSemaphore {
 		// TODO - you fill in here to initialize the SimpleSemaphore,
 		// making sure to allow both fair and non-fair Semaphore
 		// semantics.
+		if(permits < 0) throw new IllegalArgumentException("Permits cannot be less than Zero.");
 		_totalPermitsAvailable = permits;
 		_fair = fair;
 		_permitsInUse = 0;
 
 		reEnLock = new ReentrantLock(_fair);
-		permitsAvailable = reEnLock.newCondition();
+/*		permitsAvailable = reEnLock.newCondition();
 		noPermitsAvailable = reEnLock.newCondition();
-	}
+*/	
+		waitCond = reEnLock.newCondition();
+		}
 
 	/**
 	 * Acquire one permit from the semaphore in a manner that can be
@@ -56,10 +60,11 @@ public class SimpleSemaphore {
 		reEnLock.lockInterruptibly();
 		try {
 			while (_permitsInUse == _totalPermitsAvailable)
-				permitsAvailable.await();
+				//permitsAvailable.await(); 
+				waitCond.await(); //await is interruptible but lock is not
 
 			_permitsInUse++;
-			noPermitsAvailable.signal();
+			//noPermitsAvailable.signal();
 		} finally {
 			reEnLock.unlock();
 		}
@@ -71,13 +76,14 @@ public class SimpleSemaphore {
 	 */
 	public void acquireUninterruptibly() {
 		// TODO - you fill in here.
-		reEnLock.lock();
+		reEnLock.lock(); //lock() is not interruptible
 		try {
 			while (_permitsInUse == _totalPermitsAvailable)
-				permitsAvailable.awaitUninterruptibly();
+				//permitsAvailable.awaitUninterruptibly(); 
+				waitCond.awaitUninterruptibly(); //await() is interruptible but here we are making it not interruptible
 
 			_permitsInUse++;
-			noPermitsAvailable.signal();
+			//noPermitsAvailable.signal();
 		} finally {
 			reEnLock.unlock();
 		}
@@ -90,12 +96,18 @@ public class SimpleSemaphore {
 		// TODO - you fill in here.
 		reEnLock.lock();
 		try {
-			while (_permitsInUse == 0)
-				noPermitsAvailable.awaitUninterruptibly();
-
 			_permitsInUse--;
-			permitsAvailable.signal();
-		} finally {
+
+			//if all permits are in use and noone is awaiting then no need to send signal 
+			if(_permitsInUse == _totalPermitsAvailable)
+				waitCond.signal();
+			
+			/*			while (_permitsInUse == 0)
+				noPermitsAvailable.awaitUninterruptibly();
+				
+				permitsAvailable.signal();
+			 */		
+			} finally {
 			reEnLock.unlock();
 		}
 	}
@@ -106,6 +118,8 @@ public class SimpleSemaphore {
 	public int availablePermits() {
 		// TODO - you fill in here by changing null to the appropriate
 		// return value.
+
+		//if _permistsInUs was not defined as 'volatile' then we need to acquire lock.
 		return (_totalPermitsAvailable - _permitsInUse);
 	}
 }
