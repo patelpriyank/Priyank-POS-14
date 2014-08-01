@@ -99,7 +99,7 @@ public class SimpleSemaphore {
 			_permitsInUse--;
 
 			//if all permits are in use and noone is awaiting then no need to send signal 
-			if(_permitsInUse == _totalPermitsAvailable)
+			if(_permitsInUse < _totalPermitsAvailable)
 				waitCond.signal();
 			
 			/*			while (_permitsInUse == 0)
