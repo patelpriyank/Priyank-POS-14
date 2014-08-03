@@ -301,7 +301,7 @@ public class PlayPingPong implements Runnable {
         mPlatformStrategy.begin();
 
         /** Let the user know we're starting. */
-        mPlatformStrategy.print("Ready...Set...Go!");
+        mPlatformStrategy.print("W5-A4: Ready...Set...Go!");
 
         /** Create the ping and pong threads. */
         PingPongThread pingPongThreads[] = new PingPongThread[2];
